@@ -354,52 +354,6 @@ bool FaceDetect_GetFaceLandmarks(std::vector<cv::Mat_<int> > &faceLandmarks2d, s
 	return TRUE;
 }
 
-bool FaceDetect_GetFacePoseAndPulse(std::vector<cv::Vec3d> &HeadPositionCV, std::vector<cv::Vec3d> &EulerAnglesCV, std::vector<cv::Vec4d> &QuaternionCV, std::vector<cv::Matx33d> &RotationMatrixCV)
-{
-	//// Face Detect
-	pxcI32 nfaces = gFaceDetectGlob.FaceData->QueryNumberOfDetectedFaces();
-	std::cout << "nfaces = " << nfaces << std::endl;
-	for (pxcI32 i = 0; i < nfaces; i++) {
-		//按序号获取一个人脸的数据实例  
-		std::cout << "face ID" << i << std::endl;
-		PXCFaceData::Face *trackedface = gFaceDetectGlob.FaceData->QueryFaceByIndex(i);
-
-		////////////////////////////////////////////////////////////////////////////////
-		/// pose
-		const PXCFaceData::PoseData* poseData = trackedface->QueryPose();
-		/////
-		/// 头部坐标参数
-		pxcBool poseHeadPositionExist;
-		PXCFaceData::HeadPosition headposition;
-		/// 脸部姿态的欧拉角
-		pxcBool poseAnglesExist;
-		PXCFaceData::PoseEulerAngles angles;
-		/// 世界坐标系系下的脸部位置信息
-		pxcBool poseQuaternionExist;
-		PXCFaceData::PoseQuaternion quaternion;
-		/// 脸部姿态的旋转矩阵
-		pxcBool poseRotationMatrixExist;
-		pxcF64 poseRotationMatrix[9];
-
-		/// 
-		if (poseData == NULL) 
-		{
-			poseAnglesExist = 0;
-			poseQuaternionExist = 0;
-			poseHeadPositionExist = 0;
-			poseRotationMatrixExist = 0;
-		}
-		else 
-		{
-			poseAnglesExist = poseData->QueryPoseAngles(&angles);
-			poseQuaternionExist = poseData->QueryPoseQuaternion(&quaternion);
-			poseHeadPositionExist = poseData->QueryHeadPosition(&headposition);
-			poseRotationMatrixExist = poseData->QueryRotationMatrix(poseRotationMatrix);
-		}
-	}
-	return TRUE;
-}
-
 bool FaceDetect_GetFacePose(std::vector<cv::Vec3d> &HeadPositionCV, std::vector<cv::Vec3d> &EulerAnglesCV, std::vector<cv::Vec4d> &QuaternionCV, std::vector<cv::Matx33d> &RotationMatrixCV)
 {
 	//// Face Detect
