@@ -22,7 +22,9 @@ bool FaceDetect_GetFaceRects(std::vector<cv::Rect> &facesRects);
 bool FaceDetect_GetFaceLandmarks2D(std::vector<cv::Mat_<int> > &faceLandmarks2d);
 bool FaceDetect_GetFaceLandmarks3D(std::vector<cv::Mat_<int> > &faceLandmarks3d);
 bool FaceDetect_GetFaceLandmarks(std::vector<cv::Mat_<int> > &faceLandmarks2d, std::vector<cv::Mat_<int> > &faceLandmarks3d);
-bool FaceDetect_GetFacePoseAndPulse(std::vector<cv::Vec3d> &HeadPositionCV, std::vector<cv::Vec3d> &EulerAnglesCV, std::vector<cv::Vec4d> &QuaternionCV, std::vector<cv::Matx33d> &RotationMatrixCV);
+bool FaceDetect_GetFacePose(std::vector<cv::Vec3d> &HeadPositionCV, std::vector<cv::Vec3d> &EulerAnglesCV, std::vector<cv::Vec4d> &QuaternionCV, std::vector<cv::Matx33d> &RotationMatrixCV);
+bool FaceDetect_GetFacePulse(std::vector<float> &HeartRate);
+bool FaceDetect_GetFaceExpression(std::vector< std::vector<std::pair<std::string, float> > > &ExpressionsPairVec);
 
 #endif
 

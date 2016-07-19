@@ -53,14 +53,16 @@ void FaceDetect_Init()
 		std::cout << "Unabel to create FaceConfiguration\n" << std::endl;
 		return ;
 	}
-	////
+	//// face detect
 	cfg->detection.isEnabled = TRUE; // face detect
-	////
+	//// face landmark
 	cfg->landmarks.isEnabled = TRUE; // landmark detect
 	cfg->landmarks.maxTrackedFaces = 10;
-	////
+	//// face pose
 	cfg->pose.isEnabled = TRUE;
 	cfg->pose.maxTrackedFaces = 10;
+	//// face expressions
+
 	////
 	cfg->EnableAllAlerts();          // enable all alerts
 	cfg->ApplyChanges();             // apply all change to "fs"
@@ -394,6 +396,128 @@ bool FaceDetect_GetFacePoseAndPulse(std::vector<cv::Vec3d> &HeadPositionCV, std:
 			poseHeadPositionExist = poseData->QueryHeadPosition(&headposition);
 			poseRotationMatrixExist = poseData->QueryRotationMatrix(poseRotationMatrix);
 		}
+	}
+	return TRUE;
+}
+
+bool FaceDetect_GetFacePose(std::vector<cv::Vec3d> &HeadPositionCV, std::vector<cv::Vec3d> &EulerAnglesCV, std::vector<cv::Vec4d> &QuaternionCV, std::vector<cv::Matx33d> &RotationMatrixCV)
+{
+	//// Face Detect
+	pxcI32 nfaces = gFaceDetectGlob.FaceData->QueryNumberOfDetectedFaces();
+	std::cout << "nfaces = " << nfaces << std::endl;
+	for (pxcI32 i = 0; i < nfaces; i++) {
+		//按序号获取一个人脸的数据实例  
+		std::cout << "face ID" << i << std::endl;
+		PXCFaceData::Face *trackedface = gFaceDetectGlob.FaceData->QueryFaceByIndex(i);
+
+		////////////////////////////////////////////////////////////////////////////////
+		/// pose
+		const PXCFaceData::PoseData* poseData = trackedface->QueryPose();
+		/////
+		/// 头部坐标参数
+		pxcBool poseHeadPositionExist;
+		PXCFaceData::HeadPosition headposition;
+		/// 脸部姿态的欧拉角
+		pxcBool poseAnglesExist;
+		PXCFaceData::PoseEulerAngles angles;
+		/// 世界坐标系系下的脸部位置信息
+		pxcBool poseQuaternionExist;
+		PXCFaceData::PoseQuaternion quaternion;
+		/// 脸部姿态的旋转矩阵
+		pxcBool poseRotationMatrixExist;
+		pxcF64 poseRotationMatrix[9];
+
+		/// 
+		if (poseData == NULL)
+		{
+			poseAnglesExist = 0;
+			poseQuaternionExist = 0;
+			poseHeadPositionExist = 0;
+			poseRotationMatrixExist = 0;
+		}
+		else
+		{
+			poseAnglesExist = poseData->QueryPoseAngles(&angles);
+			poseQuaternionExist = poseData->QueryPoseQuaternion(&quaternion);
+			poseHeadPositionExist = poseData->QueryHeadPosition(&headposition);
+			poseRotationMatrixExist = poseData->QueryRotationMatrix(poseRotationMatrix);
+		}
+	}
+	return TRUE;
+}
+
+bool FaceDetect_GetFacePulse(std::vector<float> &HeartRate)
+{
+	//// Face Detect
+	pxcI32 nfaces = gFaceDetectGlob.FaceData->QueryNumberOfDetectedFaces();
+	std::cout << "nfaces = " << nfaces << std::endl;
+	for (pxcI32 i = 0; i < nfaces; i++) {
+		//按序号获取一个人脸的数据实例  
+		std::cout << "face ID" << i << std::endl;
+		PXCFaceData::Face *trackedface = gFaceDetectGlob.FaceData->QueryFaceByIndex(i);
+
+		////////////////////////////////////////////////////////////////////////////////
+		//// Pulse Data
+		const PXCFaceData::PulseData *pulse = trackedface->QueryPulse();
+		if (pulse != NULL)
+		{
+			pxcF32 hr = pulse->QueryHeartRate();
+			HeartRate.push_back((float)hr);
+		}
+	}
+	return TRUE;
+}
+
+std::map<PXCFaceData::ExpressionsData::FaceExpression, std::string> InitExpressionsMap()
+{
+	std::map<PXCFaceData::ExpressionsData::FaceExpression, std::string> map;
+	map[PXCFaceData::ExpressionsData::EXPRESSION_SMILE] = std::string("Smile");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_MOUTH_OPEN] = std::string("Mouth Open");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_KISS] = std::string("Kiss");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_EYES_TURN_LEFT] = std::string("Eyes Turn Left");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_EYES_TURN_RIGHT] = std::string("Eyes Turn Right");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_EYES_UP] = std::string("Eyes Up");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_EYES_DOWN] = std::string("Eyes Down");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_BROW_RAISER_LEFT] = std::string("Brow Raised Left");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_BROW_RAISER_RIGHT] = std::string("Brow Raised Right");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_BROW_LOWERER_LEFT] = std::string("Brow Lowered Left");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_BROW_LOWERER_RIGHT] = std::string("Brow Lowered Right");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_LEFT] = std::string("Closed Eye Left");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_RIGHT] = std::string("Closed Eye Right");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_TONGUE_OUT] = std::string("Tongue Out");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_PUFF_RIGHT] = std::string("Puff Right Cheek");
+	map[PXCFaceData::ExpressionsData::EXPRESSION_PUFF_LEFT] = std::string("Puff Left Cheek");
+	return map;
+}
+
+bool FaceDetect_GetFaceExpression(std::vector< std::vector<std::pair<std::string, float> > > &ExpressionsPairVec)
+{
+	//// Face Detect
+	pxcI32 nfaces = gFaceDetectGlob.FaceData->QueryNumberOfDetectedFaces();
+	std::cout << "nfaces = " << nfaces << std::endl;
+	for (pxcI32 i = 0; i < nfaces; i++) {
+		//按序号获取一个人脸的数据实例  
+		std::cout << "face ID" << i << std::endl;
+		PXCFaceData::Face *trackedface = gFaceDetectGlob.FaceData->QueryFaceByIndex(i);
+
+		////////////////////////////////////////////////////////////////////////////////
+		////// Expression
+		PXCFaceData::ExpressionsData *expressionsData = trackedface->QueryExpressions();
+		if (!expressionsData)
+			return FALSE;
+		std::map<PXCFaceData::ExpressionsData::FaceExpression, std::string> mapExpressions = InitExpressionsMap();
+		std::vector<std::pair<std::string, float> > ExpressionsPair;
+		for (auto expressionIter = mapExpressions.begin(); expressionIter != mapExpressions.end(); expressionIter++)
+		{
+			PXCFaceData::ExpressionsData::FaceExpressionResult expressionResult;
+			if (expressionsData->QueryExpression(expressionIter->first, &expressionResult))
+			{
+				int intensity = expressionResult.intensity;
+				std::string expressionName = expressionIter->second;
+				ExpressionsPair.push_back(std::make_pair(expressionName, intensity));
+			}
+		}
+		ExpressionsPairVec.push_back(ExpressionsPair);
 	}
 	return TRUE;
 }
